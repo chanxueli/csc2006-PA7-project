@@ -6,8 +6,19 @@ import matplotlib.animation as anim
 import numpy as np
 import paho.mqtt.client as mqtt
 import time
+import math
 
-r1, r2, r3, r4 = 60,60,60, 60
+
+
+
+r1, r2, r3, r4 = 80,80,80,80
+
+def distance(input):
+    return 10**(input/56)
+
+def error(input):
+    return math.log10(math.pow(input, 56))
+
 def recv1(input):
     global r1
     r1 = input
@@ -50,10 +61,10 @@ def on_message(client, userdata, msg):
     print("recv4: ", r4)
 
 def calc(x, y, z, q):
-    arr = [Circle(160, 160, x),  
-            Circle(160, 80, y),  
+    arr = [Circle(200, 200, x),  
+            Circle(200, 80, y),  
             Circle(80, 80, z),
-            Circle(80, 160, q)]  
+            Circle(80, 200, q)]  
     
     circle, meta = easy_least_squares(arr)  
     #print("result: ", circle)
@@ -71,18 +82,23 @@ def plot_cont(fun, xmax):
         ax.clear()
         ax.set_xlim(0,300)
         ax.set_ylim(0,300)
-        ax.add_artist(plt.Circle((160, 160), r1, fill=False, color="red"))
-        ax.add_artist(plt.Circle((160, 80), r2,
+        ax.add_artist(plt.Circle((200, 200), r1, fill=False, color="red"))
+        ax.add_artist(plt.Circle((200, 80), r2,
                                  fill=False, color="blue"))
         ax.add_artist(plt.Circle((80, 80), r3, fill=False, color="green"))
-        ax.add_artist(plt.Circle((80, 160), r4, fill=False, color="teal"))
-        ax.scatter(160,160, s=5,  color="red")
-        ax.scatter(160,80, s=5,  color="blue")
+        ax.add_artist(plt.Circle((80, 200), r4, fill=False, color="teal"))
+        ax.scatter(200,200, s=5,  color="red")
+        ax.scatter(200,80, s=5,  color="blue")
         ax.scatter(80,80, s=5,  color="green")
-        ax.scatter(80,160, s=5,  color="teal")
+        ax.scatter(80,200, s=5,  color="teal")
 
-        ax.add_artist(plt.Circle((a.x, a.y), b, fill=False))
-        ax.scatter(a.x,a.y, s=5, color="black")
+        distTxt = "x: {x:.2f}, y: {y:.2f} error: {e:.2f}"
+        
+        ax.add_artist(plt.Circle((a.x, a.y), b, fill=False)) 
+        ax.scatter(a.x,a.y, s=5, color="black", label=distTxt.format(x=distance(a.x-80), y=distance(a.y-80), e=distance(b*2)))
+        
+        
+        plt.legend()
         #print(a,b)
         #print(i, ': ', y[i])
 
