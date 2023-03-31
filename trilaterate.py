@@ -7,9 +7,10 @@ import numpy as np
 import paho.mqtt.client as mqtt
 import time
 import math
+import json
 
 
-
+#["uplink_message"]["decoded_payload"]["text"]
 
 r1, r2, r3, r4 = 80,80,80,80
 
@@ -17,7 +18,7 @@ def distance(input):
     return 10**(input/56)
 
 def error(input):
-    return math.log10(math.pow(input, 56))
+    return math.log10(math.pow(input, 56))  
 
 def recv1(input):
     global r1
@@ -41,24 +42,44 @@ def on_connect(client, userdata, flags, rc):
 
     # Subscribing in on_connect() means that if we lose the connection and
     # reconnect then subscriptions will be renewed.
-    client.subscribe("receiver/#")
+    client.subscribe("v3/lora-is-pain@ttn/devices/#")
 
 def on_subscribe(client, userdata, flags, rc):
     print("Subscribed")
 
 def on_message(client, userdata, msg):
-    if (msg.topic == "receiver/1"):
-        recv1(abs(int(msg.payload.decode())))
+    if (msg.topic == "v3/lora-is-pain@ttn/devices/eui-70B3D57ED005AE68/up"):
+        t = json.loads(msg.payload.decode())["uplink_message"]["decoded_payload"]["text"]
+        l = len(t)
+        if len(t) == 13:
+            return
+        t = t[:l-13]
+        recv1(int(t))
         print("recv1: ", r1)
-    elif (msg.topic == "receiver/2"):
-        recv2(abs(int(msg.payload.decode())))
+    elif (msg.topic == "v3/lora-is-pain@ttn/devices/eui-70B3D57ED005C1D0/up"):
+        t = json.loads(msg.payload.decode())["uplink_message"]["decoded_payload"]["text"]
+        l = len(t)
+        if len(t) == 13:
+            return
+        t = t[:l-13]
+        recv2(int(t))
         print("recv2: ", r2)
-    elif (msg.topic == "receiver/3"):
-        recv3(abs(int(msg.payload.decode())))
+    elif (msg.topic == "v3/lora-is-pain@ttn/devices/eui-70b3d57ed005c1d3/up"):
+        t = json.loads(msg.payload.decode())["uplink_message"]["decoded_payload"]["text"]
+        l = len(t)
+        if len(t) == 13:
+            return
+        t = t[:l-13]
+        recv3(int(t))
         print("recv3: ", r3)
-    elif (msg.topic == "receiver/4"):
-        recv4(abs(int(msg.payload.decode())))
-    print("recv4: ", r4)
+    elif (msg.topic == "v3/lora-is-pain@ttn/devices/eui-70B3D57ED005C1D8/up"):
+        t = json.loads(msg.payload.decode())["uplink_message"]["decoded_payload"]["text"]
+        l = len(t)
+        if len(t) == 13:
+            return
+        t = t[:l-13]
+        recv4(int(t))
+        print("recv4: ", r4)
 
 def calc(x, y, z, q):
     arr = [Circle(200, 200, x),  
@@ -105,23 +126,21 @@ def plot_cont(fun, xmax):
     a = anim.FuncAnimation(fig, update, frames=xmax, repeat=False)
     plt.show()
 
-host = "1659bd2762a749d79c6f9453c56635d3.s2.eu.hivemq.cloud" # broker
-port = 8883 # broker port
-username = "test2"
-password = "testtest"
+host = "au1.cloud.thethings.network" # broker
+port = 1883 # broker port
+username = "lora-is-pain@ttn"
+password = "NNSXS.5RLVQBBLKUBUN5K64C3GY2LIUB4N3L4RRCVXO2Y.RMBXZH6PVDOQBYDYXRGEOSS5LJIHG25ZD3CVY43BYSXNXM62A5JA"
 client_id = "lkju2aehdglasdaskuahflgiohk" # unique client id string used to connect to broker
-topic = "receviver/1"
 
 client = mqtt.Client(client_id=client_id) # client object / constructor
 client.username_pw_set(username=username, password=password) # add inside client object
-client.tls_set()
 
 client.on_connect = on_connect
 client.on_subscribe = on_subscribe
 client.on_message = on_message
 
 client.connect(host, port=port,)
-client.subscribe("receiver/#", qos=0)
+client.subscribe("v3/lora-is-pain@ttn/devices/#", qos=0)
 client.loop_start()
 
 while (1):
