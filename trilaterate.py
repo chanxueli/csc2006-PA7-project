@@ -8,6 +8,7 @@ import paho.mqtt.client as mqtt
 import time
 import math
 import json
+import re
 
 
 #["uplink_message"]["decoded_payload"]["text"]
@@ -48,37 +49,33 @@ def on_subscribe(client, userdata, flags, rc):
     print("Subscribed")
 
 def on_message(client, userdata, msg):
-    if (msg.topic == "v3/lora-is-pain@ttn/devices/eui-70B3D57ED005AE68/up"):
+    print(msg.topic)
+    if (msg.topic == "v3/lora-is-pain@ttn/devices/eui-70b3d57ed005ae68/up"):
         t = json.loads(msg.payload.decode())["uplink_message"]["decoded_payload"]["text"]
-        l = len(t)
-        if len(t) == 13:
-            return
-        t = t[:l-13]
-        recv1(int(t))
-        print("recv1: ", r1)
-    elif (msg.topic == "v3/lora-is-pain@ttn/devices/eui-70B3D57ED005C1D0/up"):
+        t = re.sub(r'\D', '', t)
+        print(1, t)
+        recv1(abs(int(t)))
+        #print("recv1: ", r1)
+    
+    if (msg.topic == "v3/lora-is-pain@ttn/devices/eui-70b3d57ed005c1d0/up"):
         t = json.loads(msg.payload.decode())["uplink_message"]["decoded_payload"]["text"]
-        l = len(t)
-        if len(t) == 13:
-            return
-        t = t[:l-13]
-        recv2(int(t))
+        t = re.sub(r'\D', '', t)
+        recv2(abs(int(t)))
+        print(2, t)
         print("recv2: ", r2)
-    elif (msg.topic == "v3/lora-is-pain@ttn/devices/eui-70b3d57ed005c1d3/up"):
+    
+    if (msg.topic == "v3/lora-is-pain@ttn/devices/eui-70b3d57ed005c1d3/up"):
         t = json.loads(msg.payload.decode())["uplink_message"]["decoded_payload"]["text"]
-        l = len(t)
-        if len(t) == 13:
-            return
-        t = t[:l-13]
-        recv3(int(t))
+        t = re.sub(r'\D', '', t)
+        recv3(abs(int(t)))
+        print(3, t)
         print("recv3: ", r3)
-    elif (msg.topic == "v3/lora-is-pain@ttn/devices/eui-70B3D57ED005C1D8/up"):
+    
+    if (msg.topic == "v3/lora-is-pain@ttn/devices/eui-70b3d57ed005c1d8/up"):
         t = json.loads(msg.payload.decode())["uplink_message"]["decoded_payload"]["text"]
-        l = len(t)
-        if len(t) == 13:
-            return
-        t = t[:l-13]
-        recv4(int(t))
+        t = re.sub(r'\D', '', t)
+        recv4(abs(int(t)))
+        print(4, t)
         print("recv4: ", r4)
 
 def calc(x, y, z, q):
