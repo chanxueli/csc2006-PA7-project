@@ -13,7 +13,7 @@ import re
 
 #["uplink_message"]["decoded_payload"]["text"]
 
-r1, r2, r3, r4 = 80,80,80,80
+r1, r2, r3, r4 = 1,1,1,1
 
 def distance(input):
     return 10**(input/56)
@@ -51,36 +51,48 @@ def on_subscribe(client, userdata, flags, rc):
 def on_message(client, userdata, msg):
     print(msg.topic)
     if (msg.topic == "v3/lora-is-pain@ttn/devices/eui-70b3d57ed005ae68/up"):
-        t = json.loads(msg.payload.decode())["uplink_message"]["decoded_payload"]["text"]
-        t = re.sub(r'\D', '', t)
-        print(1, t)
-        recv1(abs(int(t)))
-        #print("recv1: ", r1)
-    
+        try:
+            t = json.loads(msg.payload.decode())["uplink_message"]["decoded_payload"]["text"]
+            t = re.sub(r'\D', '', t)
+            print(1, t)
+            recv1(abs(int(t)^303030))
+            print("recv1: ", r1)
+        except:
+            pass
+        
     if (msg.topic == "v3/lora-is-pain@ttn/devices/eui-70b3d57ed005c1d0/up"):
-        t = json.loads(msg.payload.decode())["uplink_message"]["decoded_payload"]["text"]
-        t = re.sub(r'\D', '', t)
-        recv2(abs(int(t)))
-        print(2, t)
-        print("recv2: ", r2)
-    
+        try:
+            t = json.loads(msg.payload.decode())["uplink_message"]["decoded_payload"]["text"]
+            t = re.sub(r'\D', '', t)
+            recv2(abs(int(t)^303030))
+            print(2, t)
+            print("recv2: ", r2)
+        except KeyError:
+            pass
+        
     if (msg.topic == "v3/lora-is-pain@ttn/devices/eui-70b3d57ed005c1d3/up"):
-        t = json.loads(msg.payload.decode())["uplink_message"]["decoded_payload"]["text"]
-        t = re.sub(r'\D', '', t)
-        recv3(abs(int(t)))
-        print(3, t)
-        print("recv3: ", r3)
-    
+        try:
+            t = json.loads(msg.payload.decode())["uplink_message"]["decoded_payload"]["text"]
+            t = re.sub(r'\D', '', t)
+            recv3(abs(int(t)^303030))
+            print(3, t)
+            print("recv3: ", r3)
+        except KeyError:
+            pass
+        
     if (msg.topic == "v3/lora-is-pain@ttn/devices/eui-70b3d57ed005c1d8/up"):
-        t = json.loads(msg.payload.decode())["uplink_message"]["decoded_payload"]["text"]
-        t = re.sub(r'\D', '', t)
-        recv4(abs(int(t)))
-        print(4, t)
-        print("recv4: ", r4)
+        try:
+            t = json.loads(msg.payload.decode())["uplink_message"]["decoded_payload"]["text"]
+            t = re.sub(r'\D', '', t)
+            recv4(abs(int(t)^303030))
+            print(4, t)
+            print("recv4: ", r4)
+        except KeyError:
+            pass
 
 def calc(x, y, z, q):
-    arr = [Circle(200, 200, x),  
-            Circle(200, 80, y),  
+    arr = [Circle(145, 200, x),  
+            Circle(145, 80, y),  
             Circle(80, 80, z),
             Circle(80, 200, q)]  
     
@@ -100,13 +112,13 @@ def plot_cont(fun, xmax):
         ax.clear()
         ax.set_xlim(0,300)
         ax.set_ylim(0,300)
-        ax.add_artist(plt.Circle((200, 200), r1, fill=False, color="red"))
-        ax.add_artist(plt.Circle((200, 80), r2,
+        ax.add_artist(plt.Circle((210, 200), r1, fill=False, color="red"))
+        ax.add_artist(plt.Circle((210, 80), r2,
                                  fill=False, color="blue"))
         ax.add_artist(plt.Circle((80, 80), r3, fill=False, color="green"))
         ax.add_artist(plt.Circle((80, 200), r4, fill=False, color="teal"))
-        ax.scatter(200,200, s=5,  color="red")
-        ax.scatter(200,80, s=5,  color="blue")
+        ax.scatter(210,200, s=5,  color="red")
+        ax.scatter(210,80, s=5,  color="blue")
         ax.scatter(80,80, s=5,  color="green")
         ax.scatter(80,200, s=5,  color="teal")
 
