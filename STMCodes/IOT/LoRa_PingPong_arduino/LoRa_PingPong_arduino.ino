@@ -32,7 +32,7 @@ void setup() {
   while (!Serial) { }
   LoRaRadio.begin(923300000);
   LoRaRadio.setFrequency(923300000);
-  LoRaRadio.setTxPower(14);
+  LoRaRadio.setTxPower(2);
   LoRaRadio.setBandwidth(LoRaRadio.BW_125);
   LoRaRadio.setSpreadingFactor(LoRaRadio.SF_7);
   LoRaRadio.setCodingRate(LoRaRadio.CR_4_5);
@@ -41,7 +41,7 @@ void setup() {
 
 void loop(void) {
   package();
-  delay(1000); // send a "PING" every second
+  delay(500); // send a "PING" every second
   Serial.println("Hello it works");  
 }
 

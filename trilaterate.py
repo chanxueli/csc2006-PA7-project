@@ -16,10 +16,10 @@ import re
 r1, r2, r3, r4 = 1,1,1,1
 
 def distance(input):
-    return 10**(input/56)
+    return 10**(input/90)
 
 def error(input):
-    return math.log10(math.pow(input, 56))  
+    return math.log10(math.pow(input, 90))  
 
 def recv1(input):
     global r1
@@ -91,10 +91,10 @@ def on_message(client, userdata, msg):
             pass
 
 def calc(x, y, z, q):
-    arr = [Circle(145, 200, x),  
-            Circle(145, 80, y),  
+    arr = [Circle(160, 160, x),  
+            Circle(160, 80, y),  
             Circle(80, 80, z),
-            Circle(80, 200, q)]  
+            Circle(80, 160, q)]  
     
     circle, meta = easy_least_squares(arr)  
     #print("result: ", circle)
@@ -112,15 +112,15 @@ def plot_cont(fun, xmax):
         ax.clear()
         ax.set_xlim(0,300)
         ax.set_ylim(0,300)
-        ax.add_artist(plt.Circle((210, 200), r1, fill=False, color="red"))
-        ax.add_artist(plt.Circle((210, 80), r2,
+        ax.add_artist(plt.Circle((160, 160), r1, fill=False, color="red"))
+        ax.add_artist(plt.Circle((160, 80), r2,
                                  fill=False, color="blue"))
         ax.add_artist(plt.Circle((80, 80), r3, fill=False, color="green"))
-        ax.add_artist(plt.Circle((80, 200), r4, fill=False, color="teal"))
-        ax.scatter(210,200, s=5,  color="red")
-        ax.scatter(210,80, s=5,  color="blue")
+        ax.add_artist(plt.Circle((80, 160), r4, fill=False, color="teal"))
+        ax.scatter(160,160, s=5,  color="red")
+        ax.scatter(160,80, s=5,  color="blue")
         ax.scatter(80,80, s=5,  color="green")
-        ax.scatter(80,200, s=5,  color="teal")
+        ax.scatter(80,160, s=5,  color="teal")
 
         distTxt = "x: {x:.2f}, y: {y:.2f} error: {e:.2f}"
         
