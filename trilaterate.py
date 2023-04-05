@@ -13,13 +13,17 @@ import re
 
 #["uplink_message"]["decoded_payload"]["text"]
 
+n = 135
+
 r1, r2, r3, r4 = 1,1,1,1
 
 def distance(input):
-    return 10**(input/90)
+    if input == 0:
+        return 1
+    return math.exp(5.1*((input/70) - 1))#10**(input/n)
 
 def error(input):
-    return math.log10(math.pow(input, 90))  
+    return math.log10(math.pow(input, n))  
 
 def recv1(input):
     global r1
@@ -54,8 +58,8 @@ def on_message(client, userdata, msg):
         try:
             t = json.loads(msg.payload.decode())["uplink_message"]["decoded_payload"]["text"]
             t = re.sub(r'\D', '', t)
-            print(1, t)
-            recv1(abs(int(t)^303030))
+            print(1, int(t)^303030)
+            recv1(distance(abs(int(t)^303030)))
             print("recv1: ", r1)
         except:
             pass
@@ -64,8 +68,8 @@ def on_message(client, userdata, msg):
         try:
             t = json.loads(msg.payload.decode())["uplink_message"]["decoded_payload"]["text"]
             t = re.sub(r'\D', '', t)
-            recv2(abs(int(t)^303030))
-            print(2, t)
+            recv2(distance(abs(int(t)^303030)))
+            print(2, int(t)^303030)
             print("recv2: ", r2)
         except KeyError:
             pass
@@ -74,8 +78,8 @@ def on_message(client, userdata, msg):
         try:
             t = json.loads(msg.payload.decode())["uplink_message"]["decoded_payload"]["text"]
             t = re.sub(r'\D', '', t)
-            recv3(abs(int(t)^303030))
-            print(3, t)
+            recv3(distance(abs(int(t)^303030)))
+            print(3, int(t)^303030)
             print("recv3: ", r3)
         except KeyError:
             pass
@@ -84,17 +88,17 @@ def on_message(client, userdata, msg):
         try:
             t = json.loads(msg.payload.decode())["uplink_message"]["decoded_payload"]["text"]
             t = re.sub(r'\D', '', t)
-            recv4(abs(int(t)^303030))
-            print(4, t)
+            recv4(distance(abs(int(t)^303030)))
+            print(4, int(t)^303030)
             print("recv4: ", r4)
         except KeyError:
             pass
 
 def calc(x, y, z, q):
-    arr = [Circle(160, 160, x),  
-            Circle(160, 80, y),  
-            Circle(80, 80, z),
-            Circle(80, 160, q)]  
+    arr = [Circle(4, 4, x),  
+            Circle(4, 0, y),  
+            Circle(0, 0, z),
+            Circle(0, 4, q)]  
     
     circle, meta = easy_least_squares(arr)  
     #print("result: ", circle)
@@ -110,22 +114,21 @@ def plot_cont(fun, xmax):
         y.append((a,b))
         
         ax.clear()
-        ax.set_xlim(0,300)
-        ax.set_ylim(0,300)
-        ax.add_artist(plt.Circle((160, 160), r1, fill=False, color="red"))
-        ax.add_artist(plt.Circle((160, 80), r2,
-                                 fill=False, color="blue"))
-        ax.add_artist(plt.Circle((80, 80), r3, fill=False, color="green"))
-        ax.add_artist(plt.Circle((80, 160), r4, fill=False, color="teal"))
-        ax.scatter(160,160, s=5,  color="red")
-        ax.scatter(160,80, s=5,  color="blue")
-        ax.scatter(80,80, s=5,  color="green")
-        ax.scatter(80,160, s=5,  color="teal")
+        ax.set_xlim(-2,6)
+        ax.set_ylim(-2,6)
+        ax.add_artist(plt.Circle((4, 4), float(r1), fill=False, color="red"))
+        ax.add_artist(plt.Circle((4, 0), float(r2), fill=False, color="blue"))
+        ax.add_artist(plt.Circle((0, 0), float(r3), fill=False, color="green"))
+        ax.add_artist(plt.Circle((0, 4), float(r4), fill=False, color="teal"))
+        ax.scatter(4,4, s=1,  color="red")
+        ax.scatter(4,0, s=1,  color="blue")
+        ax.scatter(0,0, s=1,  color="green")
+        ax.scatter(0,4, s=1,  color="teal")
 
         distTxt = "x: {x:.2f}, y: {y:.2f} error: {e:.2f}"
         
         ax.add_artist(plt.Circle((a.x, a.y), b, fill=False)) 
-        ax.scatter(a.x,a.y, s=5, color="black", label=distTxt.format(x=distance(a.x-80), y=distance(a.y-80), e=distance(b*2)))
+        ax.scatter(a.x,a.y, s=1, color="black", label=distTxt.format(x=a.x, y=a.y, e=b*2))
         
         
         plt.legend()

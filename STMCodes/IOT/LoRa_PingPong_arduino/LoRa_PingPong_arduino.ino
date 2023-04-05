@@ -41,7 +41,7 @@ void setup() {
 
 void loop(void) {
   package();
-  delay(500); // send a "PING" every second
+  delay(1000); // send a "PING" every second
   Serial.println("Hello it works");  
 }
 
