@@ -10,20 +10,20 @@ import math
 import json
 import re
 
-
-#["uplink_message"]["decoded_payload"]["text"]
-
-n = 135
-
+#Init RSSI Values
 r1, r2, r3, r4 = 1,1,1,1
+
+#MQTT Settings
+host = "au1.cloud.thethings.network" # broker
+port = 1883 # broker port
+username = "lora-is-pain@ttn"
+password = "NNSXS.5RLVQBBLKUBUN5K64C3GY2LIUB4N3L4RRCVXO2Y.RMBXZH6PVDOQBYDYXRGEOSS5LJIHG25ZD3CVY43BYSXNXM62A5JA"
+client_id = "lkju2aehdglasdaskuahflgiohk" # unique client id string used to connect to broker
 
 def distance(input):
     if input == 0:
         return 1
-    return math.exp(5.1*((input/70) - 1))#10**(input/n)
-
-def error(input):
-    return math.log10(math.pow(input, n))  
+    return math.exp(5.1*((input/70) - 1))
 
 def recv1(input):
     global r1
@@ -49,9 +49,11 @@ def on_connect(client, userdata, flags, rc):
     # reconnect then subscriptions will be renewed.
     client.subscribe("v3/lora-is-pain@ttn/devices/#")
 
+# Successful Subscribe callback
 def on_subscribe(client, userdata, flags, rc):
     print("Subscribed")
 
+# Decodes the message and assign it to the respective variables upon receiving a message.
 def on_message(client, userdata, msg):
     print(msg.topic)
     if (msg.topic == "v3/lora-is-pain@ttn/devices/eui-70b3d57ed005ae68/up"):
@@ -94,6 +96,7 @@ def on_message(client, userdata, msg):
         except KeyError:
             pass
 
+# Compute the estimated location
 def calc(x, y, z, q):
     arr = [Circle(4, 4, x),  
             Circle(4, 0, y),  
@@ -104,6 +107,7 @@ def calc(x, y, z, q):
     #print("result: ", circle)
     return circle.center, circle.radius
 
+#Draw out the plot on a window.
 def plot_cont(fun, xmax):
     y = []
     fig = plt.figure()
@@ -132,21 +136,14 @@ def plot_cont(fun, xmax):
         
         
         plt.legend()
-        #print(a,b)
-        #print(i, ': ', y[i])
 
     a = anim.FuncAnimation(fig, update, frames=xmax, repeat=False)
     plt.show()
 
-host = "au1.cloud.thethings.network" # broker
-port = 1883 # broker port
-username = "lora-is-pain@ttn"
-password = "NNSXS.5RLVQBBLKUBUN5K64C3GY2LIUB4N3L4RRCVXO2Y.RMBXZH6PVDOQBYDYXRGEOSS5LJIHG25ZD3CVY43BYSXNXM62A5JA"
-client_id = "lkju2aehdglasdaskuahflgiohk" # unique client id string used to connect to broker
-
 client = mqtt.Client(client_id=client_id) # client object / constructor
 client.username_pw_set(username=username, password=password) # add inside client object
 
+#Assign callbacks
 client.on_connect = on_connect
 client.on_subscribe = on_subscribe
 client.on_message = on_message
