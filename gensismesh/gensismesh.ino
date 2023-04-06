@@ -1,11 +1,16 @@
+// The nodes have ble mesh table is setup already
+// However , the table is currently not used 
+// The table will be able to used to efficently set up the mesh routes and node connections
+// The table can also be use to set up one static end point.
+// We can use table and rssi to do tracking of a small distance 
+
 #include <M5StickCPlus.h>
 #include <BLEDevice.h>
 #include <BLEServer.h>
 
-// change the BLE Server name to connect to
+// Declare to the mesh cluster name
 #define bleServerName "meowmeowcluster"
 
-/* UUID's of the service, characteristic that we want to read*/
 // BLE Service for server and client
 #define SERVICE_UUID "a930af71-cfd9-4e3c-9a89-50df1d60dce0"
 static BLEUUID bleServiceUUID("a930af71-cfd9-4e3c-9a89-50df1d60dce0"); 
@@ -22,10 +27,6 @@ static BLEAddress* pServerAddress;
 
 //Characteristicd that we want to read
 static BLERemoteCharacteristic* catCharacteristic;
-
-//  Timer variables
-unsigned long lastTime = 0;
-unsigned long timerDelay = 2000;
 
 //Activate notify
 const uint8_t notificationOn[] = { 0x1, 0x0 };
@@ -45,6 +46,7 @@ static String mainMeshTable [MAXNODESIZE] = {};
 int tableCount = 1 ;
 
 bool containsAddress( char* target) {
+  // Check if address contain in ble main mesh table
   Serial.println("CHECKINGG");
   for (int i = 0; i < MAXNODESIZE ; i++) {
     if (mainMeshTable[i].compareTo(target) == 0) {
@@ -57,26 +59,8 @@ bool containsAddress( char* target) {
 class MyServerCallbacks: public BLEServerCallbacks {
   // For Server
   void onConnect(BLEServer* pServer) {
-    // Check for exist table
-    // If exist 
+    // Server is connected
     deviceConnected = true;
-    // Find the count
-    // int countArr = 0;
-    // for (int i = 0; i < MAXNODESIZE; i++) {
-    //   if((mainMeshTable[i] == "\0")){
-    //     break;
-    //   }
-    //   countArr++;
-    // }
-
-    // for(int i = 0;  i<countArr;i++ ){
-    //   String s =mainMeshTable[i]+ String(countArr);
-    //   Serial.println(s);
-    //   char* charArray = new char[s.length() + 1];
-    //   strcpy(charArray, s.c_str());
-    //   catCharacteristics.setValue(charArray);
-    //   catCharacteristics.notify();
-    // }
     M5.Lcd.printf("\n Found client!", 0);
     Serial.println("MyServerCallbacks::Connected...");
   };
@@ -95,83 +79,34 @@ void toggleLed(){
   }
 }
 
-void callNotify(){
-    toggleLed();
-    // Find the count
-    int countArr = 0;
-    for (int i = 0; i < MAXNODESIZE; i++) {
-      if((mainMeshTable[i] == "\0")){
-        break;
-      }
-      countArr++;
-    }
-
-    for(int i = 0;  i<countArr;i++ ){
-      String s =mainMeshTable[i]+ String(countArr);
-      Serial.println(s);
-      char* charArray = new char[s.length() + 1];
-      strcpy(charArray, s.c_str());
-      catCharacteristics.setValue(charArray);
-      catCharacteristics.notify();
-    }
-}
- 
+// Set up main notify callback
 static void catNotifyCallback(BLERemoteCharacteristic* pBLERemoteCharacteristic,
                               uint8_t* pData, size_t length, bool isNotify) {
-  if(String((char*)pData).substring(0,4) == "meow"){
+
+  // Check for pre scripted data , for different actions
+  if (String((char*)pData).substring(0, 4) == "ping") {
     M5.Lcd.printf("\n Pingging this device", 0);
     toggleLed();
-    catCharacteristics.setValue("meow");
+    catCharacteristics.setValue("ping");
     catCharacteristics.notify();
-  }else{
-    static int count = 0 ;
-    Serial.println("cat data callback");
-    
-    String bleAddress = String((char*)pData).substring(0,17);  
-    Serial.println(bleAddress);
-    tableCount = String((char*)pData).substring(17,18).toInt();
+  } else {
+    // Set ble mesh table
+    static int count = 0;
+    String bleAddress = String((char*)pData).substring(0, 17);
+    Serial.println(String((char*)pData).substring(0, 4));
+    tableCount = String((char*)pData).substring(17, 18).toInt();
     mainMeshTable[count] = bleAddress;
-    
-    if((tableCount-1) == count){
+
+    if ((tableCount - 1) == count) {
       // Reset count and add my ble to the table
       mainMeshTable[tableCount] = myBleAddress;
       tableCount += tableCount;
-      Serial.println("reset");
-      // toggleLed();
-      // callNotify();
+      Serial.println("Ble successfuly added to table, ready to notify other nodes.");
       count = 0;
-    }else{
+    } else {
       count++;
     }
   }
-}
-
-//Connect to the BLE Server that has the name, Service, and Characteristics
-bool connectToServer(BLEAddress pAddress) {
-  BLEClient* pClient = BLEDevice::createClient();
-  
-  // Connect to the remove BLE Server.
-  pClient->connect(pAddress);
-  Serial.println(" - Connected to server");
-  Serial.println(pAddress.toString().c_str());
-  // Obtain a reference to the service we are after in the remote BLE server.
-  BLERemoteService* pRemoteService = pClient->getService(bleServiceUUID);
-  if (pRemoteService == nullptr) {
-    Serial.print("Failed to find our service UUID: ");
-    Serial.println(bleServiceUUID.toString().c_str());
-    return (false);
-  }
-
-  catCharacteristic = pRemoteService->getCharacteristic(catCharacteristicUUID);
-  if ( catCharacteristic == nullptr) {
-    Serial.print("Failed to find our characteristic UUID");
-    return false;
-  }
-  Serial.println(" - Found our characteristics");
-
-  //Assign callback functions for the Characteristics
-  catCharacteristic->registerForNotify(catNotifyCallback);
-  return true;
 }
 
 //Callback function that gets called, when another device's advertisement has been received
@@ -200,21 +135,13 @@ class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks {
   }
 };
 
-//function that prints the latest sensor readings in the OLED display
-// void printReadings() {
-
-//   Serial.print("Print data :");
-//   // Serial.print(catValue);
-//   Serial.println(" cats");
-// }
-
 void setup() {
   //Start serial communication
   Serial.begin(115200);
   mainMeshTable[0] = "4c:75:25:cb:86:62"; // Set up genesis node  
   Serial.println("Starting BLE Client application...");
 
-  // put your setup code here, to run once:
+  //Set up led and oled
   M5.begin();
   pinMode(ledPin, OUTPUT);
   digitalWrite(ledPin, HIGH);
@@ -248,49 +175,19 @@ void setup() {
   pAdvertising->addServiceUUID(SERVICE_UUID);
   pServer->getAdvertising()->start();
   Serial.println("Waiting a client connection to notify...");
-
-  // --Client start --
-  // Retrieve a Scanner and set the callback we want to use to be informed when we
-  // have detected a new device.  Specify that we want active scanning and start the
-  // scan to run for 30 seconds.
-  // BLEScan* pBLEScan = BLEDevice::getScan();
-  // pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
-  // pBLEScan->setActiveScan(true);
-  // pBLEScan->start(30);
-
   
 }
 
 void loop() {
-
   if (deviceConnected) {
     // Server is connected
-
     if(digitalRead(M5_BUTTON_HOME) == LOW ){
-      // callNotify();
-      catCharacteristics.setValue("meow");
+      // Ping to set a chain reaction to toggle led of all connected device.
+      catCharacteristics.setValue("ping");
       catCharacteristics.notify();
       toggleLed();
     }
-    // lastTime = millis();
-    
   }
-
-  // if (doConnect == true) {
-  //   // Client do da connect
-  //   if (connectToServer(*pServerAddress)) {
-  //     // Client do da connect
-  //     Serial.println("Connected to the BLE Server.");
-  //     // M5.Lcd.setCursor(0, 4, 2);
-  //     M5.Lcd.printf("\n Connected to the BLE Server", 0);
-  //     //Activate the Notify property of each Characteristic
-  //     catCharacteristic->getDescriptor(BLEUUID((uint16_t)0x2904))->writeValue((uint8_t*)notificationOn, 2, true);
-  //     connected = true;
-  //   } else {
-  //     Serial.println("Failed to connect to the server; Restart device to scan for nearby BLE server again.");
-  //   }
-  //   doConnect = false;
-  // }
 
   delay(1000);  // Delay one second between loops.
 }
