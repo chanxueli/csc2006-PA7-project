@@ -51,7 +51,7 @@ void package(){
   // uint32_t crc = calcCrc(data, sizeof(data));
   LoRaRadio.beginPacket();
   
-  LoRaRadio.write('Jesus is our savior');
+  LoRaRadio.write('IWILLNOTCHEAT');
 
   LoRaRadio.endPacket();
 }
